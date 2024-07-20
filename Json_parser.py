@@ -75,6 +75,9 @@ def parser_object(tokens, index):
             expected_key = False
         else:
             if tokens[index] == ',':
+                # check for trailing comma ... 
+                if tokens[index + 1 ] == '}':
+                    return -1
                 index += 1
                 expected_key = True
             elif tokens[index] == "}":
@@ -88,15 +91,27 @@ def parser_array(tokens, index):
     if tokens[index] != "[":
         return -1
     index += 1 
-    while index < len(tokens) and tokens[index] != ']':
-        index = parser_value(tokens, index)
-        if index == -1:
-            return -1
-        if tokens[index] == ',':
-            index += 1
-    if tokens[index] != ']':
-        return -1
-    return index + 1
+    expected_value = True
+    while index < len(tokens):
+        if tokens[index] == ']':
+            return index + 1
+        if expected_value:
+            index = parser_value(tokens, index)
+            if index == -1:
+                return -1
+            expected_value = False
+        else:
+            if tokens[index] == ',':
+                # check for trailing comma ...
+                if tokens[index + 1 ] == ']':
+                    return -1
+                index += 1
+                expected_value = True
+            elif tokens[index] == ']':
+                return index + 1
+            else:
+                return -1
+    return -1
 
 def parser(tokens):
     if tokens[0] != '{' or tokens[-1] != '}':
