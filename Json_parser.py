@@ -44,6 +44,12 @@ def parser_value(tokens, index):
     elif tokens[index] in ['true', 'false', 'null']:
         return index + 1 # boolean and null value
     elif tokens[index].isdigit() or (tokens[index].startswith('-') and tokens[index][1:].isdigit()):
+        num = tokens[index]
+        # check for leading zero .... 
+        if num[0] == '0' and len(num) > 1 and num[1].isdigit():
+            return -1
+        if num.startswith('-') and len(num) > 2 and num[1] == '0' and num[2].isdigit():
+            return -1     
         return index + 1 # numeric value
     return -1
 
