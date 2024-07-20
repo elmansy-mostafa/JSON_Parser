@@ -35,6 +35,8 @@ def lexer(input_string):
     return tokens
 
 def parser_value(tokens, index):
+    if index >= len(tokens):
+        return -1
     if tokens[index] == '{':
         return parser_object(tokens, index)
     elif tokens[index] == '[':
@@ -63,10 +65,10 @@ def parser_object(tokens, index):
         if tokens[index] == "}":
             return index + 1 
         if expected_key:
-            if not (tokens[index].startswith('"') and tokens[index].endswith('"')):
+            if index >= len(tokens) or not (tokens[index].startswith('"') and tokens[index].endswith('"')):
                 return -1
             index += 1
-            if tokens[index] != ':':
+            if index >= len(tokens) or tokens[index] != ':':
                 return -1
             index += 1
             index = parser_value(tokens, index)
@@ -76,7 +78,7 @@ def parser_object(tokens, index):
         else:
             if tokens[index] == ',':
                 # check for trailing comma ... 
-                if tokens[index + 1 ] == '}':
+                if index + 1 >= len(tokens) or tokens[index + 1 ] == '}':
                     return -1
                 index += 1
                 expected_key = True
@@ -103,7 +105,7 @@ def parser_array(tokens, index):
         else:
             if tokens[index] == ',':
                 # check for trailing comma ...
-                if tokens[index + 1 ] == ']':
+                if index + 1 >= len(tokens) or tokens[index + 1 ] == ']':
                     return -1
                 index += 1
                 expected_value = True
@@ -114,22 +116,27 @@ def parser_array(tokens, index):
     return -1
 
 def parser(tokens):
-    if tokens[0] != '{' or tokens[-1] != '}':
-        return False
-    return parser_object(tokens, 0) == len(tokens)
+    if tokens[0] == '[':
+        return parser_array(tokens, 0) == len(tokens)
+    elif tokens[0] == '{':
+        return parser_object(tokens, 0) == len(tokens)
+    return False
+    
             
 
 def validate_json(input_string):
     try:
         tokens = lexer(input_string)
         if parser(tokens):
-            return "Valid JSON"
+            return "Valid JSON", 0
         else:
-            return "Invalid JSON"
+            return "Invalid JSON", 1
             
     except ValueError as e:
-        print(f"Invalid jason: {e}")
-        return "Invalid JSON"
+        return f"Invalid jason: {e}", 1
+
+
+
 
 def  test_json_files():
     test_folder = 'test_json'
@@ -138,8 +145,10 @@ def  test_json_files():
         if os.path.isfile(file_path):
             with open(file_path, 'r') as file:
                 json_content = file.read().strip()
-                result = validate_json(json_content)
+                result, exit_code = validate_json(json_content)
                 print(f"Testing: {test_file} : {result}")
+                if exit_code != 0:
+                    print(f"Exit code: {exit_code}")
                 
 if __name__ == "__main__":
     test_json_files()
