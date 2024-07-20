@@ -10,11 +10,31 @@ def lexer(input_string):
         elif input_string[i] == '"':
             start_quote = i
             i += 1
-            while i < len(input_string) and input_string[i] != '"':
-                i += 1
-            if i < len(input_string):
-                tokens.append(input_string[start_quote:i+1])
-            i += 1
+            while i < len(input_string):
+                if input_string[i] == '\\':
+                    if i + 1 < len(input_string):
+                        escape_char = input_string[i + 1]
+                        if escape_char in ['"', '\\', '/', 'b', 'f', 'n', 'r', 't']:    # \" (for a quote)  - \\ (for a backslash)  - \/ (for a slash) - \b (for backspace)  - \f (for form feed)  - \n (for newline)-  \r (for carriage return) - \t (for tab)
+                            i += 2
+                        elif escape_char == 'u':
+                            if i + 5 < len(input_string) and all(c in '0123456789abcdefABCDEF' for c in input_string[i+2:i+6]):
+                                i += 6
+                            else: 
+                                raise ValueError(f"Invalid unicode escape sequence : {input_string[i:i+6]}")
+                        else: 
+                            raise ValueError(f"Invalid escape sequence: {input_string[i:i+2]}")
+                    else: 
+                        raise ValueError(f"Invalid escape sequence: {input_string[i:i+2]}")
+                
+                elif input_string[i] == '"':
+                    tokens.append(input_string[start_quote:i+1])
+                    i += 1 
+                    break
+                else:
+                    i += 1
+            if i >= len(input_string) or input_string[i - 1] != '"':
+                raise ValueError("Unterminated string literal")
+
         elif input_string[i].isdigit() or input_string[i] == '-':
             start_num = i
             i += 1
