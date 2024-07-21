@@ -1,4 +1,5 @@
 import os
+import re
 
 def lexer(input_string):
     tokens = []
@@ -7,7 +8,7 @@ def lexer(input_string):
         if input_string[i] in ['{', '}', ':', ',', '[', ']']:
             tokens.append(input_string[i])
             i += 1
-        elif input_string[i] == '"':
+        elif input_string[i] == '"':   # start of string literal
             start_quote = i
             i += 1
             while i < len(input_string):
@@ -26,21 +27,21 @@ def lexer(input_string):
                     else: 
                         raise ValueError(f"Invalid escape sequence: {input_string[i:i+2]}")
                 
-                elif input_string[i] == '"':
+                elif input_string[i] == '"':   # end of string literal
                     tokens.append(input_string[start_quote:i+1])
                     i += 1 
                     break
+                elif input_string[i] in '\t\n\r':  # add space to a list of invalid character
+                    raise ValueError(f"Invalid character in a string : {input_string[i]}")
                 else:
                     i += 1
             if i >= len(input_string) or input_string[i - 1] != '"':
                 raise ValueError("Unterminated string literal")
 
-        elif input_string[i].isdigit() or input_string[i] == '-':
-            start_num = i
-            i += 1
-            while i < len(input_string) and (input_string[i].isdigit() or input_string[i] == '.'):
-                i += 1
-            tokens.append(input_string[start_num:i])
+        elif re.match(r'-?\d+(\.\d+)?([eE][+-]?\d+)?', input_string[i:]):
+            match = re.match(r'-?\d+(\.\d+)?([eE][+-]?\d+)?', input_string[i:])
+            tokens.append(match.group(0))
+            i += len(match.group(0))
         elif input_string[i:i+4] == 'true' or input_string[i:i+5] == 'false' or input_string[i:i+4] == 'null':
             if input_string[i:i+4] == 'true' or input_string[i:i+4] == 'null':
                 tokens.append(input_string[i:i+4])
@@ -65,7 +66,7 @@ def parser_value(tokens, index):
         return index + 1 # string value
     elif tokens[index] in ['true', 'false', 'null']:
         return index + 1 # boolean and null value
-    elif tokens[index].isdigit() or (tokens[index].startswith('-') and tokens[index][1:].isdigit()):
+    elif tokens[index][0] in '-0123456789':
         num = tokens[index]
         # check for leading zero .... 
         if num[0] == '0' and len(num) > 1 and num[1].isdigit():
