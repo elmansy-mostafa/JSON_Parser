@@ -1,5 +1,5 @@
 # JSON_Parser (2024)
-### Overview
+## Overview
 
 This code is a custom JSON validator. It consists of functions that lex (tokenize) and parse JSON strings to ensure they adhere to the JSON format. The main components are:
 
@@ -8,7 +8,7 @@ This code is a custom JSON validator. It consists of functions that lex (tokeniz
 3. Validation Function (validate_json): Combines lexing and parsing to validate a JSON string.
 4. Test Function (test_json_files): Reads JSON files from a directory and validates them using the validate_json function.
 
-### Features
+## Features
 
 1. Tokenization:
    - Handles JSON syntax characters ({, }, [, ], :, ,).
@@ -31,7 +31,7 @@ This code is a custom JSON validator. It consists of functions that lex (tokeniz
    - Automatically validates multiple JSON files from a specified directory.
    - Outputs validation results for each file.
 
-### Detailed Functions
+## Detailed Functions
 
 - lexer(input_string): Converts a JSON string into tokens, handling escape sequences and special characters.
 - parser_value(tokens, index): Parses individual JSON values (objects, arrays, strings, numbers, booleans, null).
